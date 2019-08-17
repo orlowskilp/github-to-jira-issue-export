@@ -1,0 +1,46 @@
+= GitHub to JIRA issue exporting utility
+
+As of version 8.4 discontinued support for GitHub issues importing. The following tools download issues using
+GitHub API 3.0, parse them and convert them to a JIRA readible CSV file for _External issues import_.
+
+== Downloading issues from GitHub
+
+The `download_issues.sh` BASH script downloads issues from a selected GitHub repository and stores them in a 
+JSON file
+
+=== Setting up OAuth token based authentication
+
+GitHub authentication is performed using GitHub OAuth tokens. A base64 encoded token has to be stored in the
+`.token` file stored in the same directory as the script.
+
+Once you have your GitHub OAuth token, you can store it in the `.token` file in the following manner
+
+----
+$ echo "<OAuth token literal>" | base64 > .token
+----
+
+=== Usage
+
+To download the issues from a repository say `my-repo`, you do
+
+----
+$ ./download_issues.sh my-repo
+----
+
+This will attempt to download the issues using `curl` and store then in `my-repo.json`. The file is properly
+formatted and ready for conversion to CSV for JIRA
+
+== Converting the downloaded JSON file to CSV
+
+The `gh_issues_to_csv.py` Python script parses JSON files produced by `download_issues.sh` and formats them 
+in CSV format
+
+=== Usage
+
+Following the example used in previous section, you convert `my-repo.json` file to a CSV as follows
+
+----
+$ gh_issues_to_csv.py ./my-repo.json
+----
+
+This will produce `output.csv` file, which is ready for JIRA issues import.
