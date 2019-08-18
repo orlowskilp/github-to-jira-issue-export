@@ -19,10 +19,12 @@ specific language governing permissions and limitations
 under the License.
 """
 
-def parse_gh_issues(file):
-	import json
+def format_issue_description(text):
+	import formatters.custom_formatter as cf
 
-	parsed_json = json.loads(file.read())
+	return cf.format(text)
+
+def parse_gh_issues(parsed_json):
 	num_issues = len(parsed_json)
 
 	output = [['Issue Type', 'Summary', 'Description', 'Status', 'Date Created', 'Date Modified', 'Labels', 'Assignee']]
@@ -30,7 +32,7 @@ def parse_gh_issues(file):
 	for i in range(num_issues):
 		# Read fields accessible off the bat
 		title = parsed_json[i]['title']
-		body = parsed_json[i]['body'].replace('\n', '[new line]')
+		body = format_issue_description(parsed_json[i]['body'])
 		state = parsed_json[i]['state']
 		created_at = parsed_json[i]['created_at'][:-1]
 		closed_at = None if parsed_json[i]['closed_at'] == None else parsed_json[i]['closed_at'][:-1]
@@ -72,7 +74,7 @@ def write_csv(file, data):
 	#file.writelines(lines)
 
 def main():
-	import sys
+	import sys, json
 
 	if len(sys.argv) < 2:
 		print("No input file provided")
@@ -81,7 +83,7 @@ def main():
 	file_path = sys.argv[1]
 
 	with open(file_path, "r") as file:
-		issues = parse_gh_issues(file)
+		issues = parse_gh_issues(json.loads(file.read()))
 
 	with open("output.csv", "w") as file:
 		write_csv(file, issues)
