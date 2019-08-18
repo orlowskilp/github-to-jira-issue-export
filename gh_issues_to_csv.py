@@ -62,28 +62,67 @@ def parse_gh_issues(parsed_json):
 def write_csv(file, data):
 	import csv
 
+	# Create a CSV writer and write data line by line
 	csv_writer = csv.writer(file, delimiter = ',', quoting=csv.QUOTE_MINIMAL)
 	for i in range(len(data)):
 		csv_writer.writerow(data[i])
 
-def main():
-	import sys, json
+def handle_input():
+	import sys, os
 
+	# Check if there is at least one input parameter
 	if len(sys.argv) < 2:
-		print("No input file provided")
+		print("Usage: {0} <my/input.json> | <my/inputs/>".format(sys.argv[0]))
+		return None
+
+	input_path = sys.argv[1]
+
+	# Check if the first parameter is a valid path to a file or directory
+	if not os.path.exists(input_path):
+		print("File {0} doesn't exist".format(input_path))
+		return None
+
+	# Check if the path in input parameter is a file or directory and handle it approprietly
+	if os.path.isdir(input_path):
+		input_files = []
+		for root, dirs, files in os.walk(input_path):
+			for json_file in files:
+				input_files.append(os.path.join(root, json_file))
+
+		return input_files
+	else:
+		return [input_path]
+
+def main():
+	import json
+
+	files = handle_input()
+	if files is None:
+		print("Exiting...")
 		return -1
 
-	file_path = sys.argv[1]
+	outputs_count = 0
+	for i in range(len(files)):
+		parsed_json = None
 
-	with open(file_path, "r") as file:
-		issues = parse_gh_issues(json.loads(file.read()))
+		with open(files[i], "r") as file:
+			try:
+				parsed_json = json.loads(file.read())
+			except ValueError:
+				print("{0} is not a properly formatted JSON file. Skipping...".format(files[i]))
+				continue
 
-	output_file = "{0}.csv".format(file_path.split('.')[0])
+			issues = parse_gh_issues(parsed_json)
 
-	with open(output_file, "w") as file:
-		write_csv(file, issues)
+		output_file = "{0}.csv".format(files[i].split('.')[0])
 
-	print("CSV formatted output saved in {0}".format(output_file))
+		with open(output_file, "w") as file:
+			write_csv(file, issues)
+
+		print("CSV formatted output saved to {0}".format(output_file))
+		outputs_count = outputs_count + 1
+
+	print("Saved {0} files".format(str(outputs_count)))
 
 if __name__ == "__main__":
 	main()
