@@ -66,13 +66,6 @@ def write_csv(file, data):
 	for i in range(len(data)):
 		csv_writer.writerow(data[i])
 
-
-	#lines = []
-	#for i in range(len(data)):
-	#	lines.append(",".join(data[i]))
-
-	#file.writelines(lines)
-
 def main():
 	import sys, json
 
@@ -85,11 +78,12 @@ def main():
 	with open(file_path, "r") as file:
 		issues = parse_gh_issues(json.loads(file.read()))
 
-	with open("output.csv", "w") as file:
+	output_file = "{0}.csv".format(file_path.split('.')[0])
+
+	with open(output_file, "w") as file:
 		write_csv(file, issues)
 
-	#for i in range(len(issues)):
-	#	print(issues[i])
+	print("CSV formatted output saved in {0}".format(output_file))
 
 if __name__ == "__main__":
 	main()
