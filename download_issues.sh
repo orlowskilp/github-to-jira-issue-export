@@ -35,6 +35,7 @@ REPO=$1
 
 curl -i "https://api.github.com/repos/onosolutions/${REPO}/issues?state=all" -u "orlowskilp:${TOKEN}" > input.json
 LINE_COUNT=$(cat input.json | wc -l)
-TAIL_LINE_COUNT=$((${LINE_COUNT} - 27))
+LAST_HEADER_LINE=$(grep -n X-GitHub-Request-Id input.json | awk -F ":" '{print $1}')
+TAIL_LINE_COUNT=$((${LINE_COUNT} - ${LAST_HEADER_LINE} - 1))
 tail -$TAIL_LINE_COUNT input.json > ${REPO}.json
 rm input.json
